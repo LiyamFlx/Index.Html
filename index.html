@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EngageSense - Button Fix</title>
+  <title>EngageSense - Real-Time Engagement Tracking</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -14,6 +14,21 @@
       background: linear-gradient(to right, #f9f9f9, #e3f2fd);
       text-align: center;
       color: #333;
+    }
+
+    header {
+      background: linear-gradient(90deg, #4CAF50, #81C784);
+      color: white;
+      padding: 20px 0;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    header h1 { margin: 0; font-size: 2.5em; }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
     }
 
     .button-row {
@@ -39,47 +54,82 @@
       transform: translateY(-2px);
       box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
     }
+
+    table {
+      width: 100%;
+      margin: 20px 0;
+      border-collapse: collapse;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>EngageSense - Button Fix</h1>
-    <p>Real-Time Engagement Tracking</p>
+    <h1>EngageSense</h1>
+    <p>Track Real-Time Physical, Mental, Emotional, and Spiritual Engagement</p>
   </header>
 
-  <!-- Button Row -->
-  <div class="button-row">
-    <button id="startTracking">Start Tracking</button>
-    <button id="stopTracking">Stop Tracking</button>
-    <button id="exportData">Export Data</button>
-  </div>
+  <div class="container">
+    <!-- Button Row -->
+    <div class="button-row">
+      <button id="startTracking">Start Tracking</button>
+      <button id="stopTracking">Stop Tracking</button>
+      <button id="exportData">Export Data</button>
+    </div>
 
-  <canvas id="engagementChart" width="400" height="200"></canvas>
+    <!-- Data Table -->
+    <table>
+      <thead>
+        <tr>
+          <th>Time (s)</th>
+          <th>Physical Engagement</th>
+          <th>Mental Engagement</th>
+          <th>Emotional Engagement</th>
+          <th>Spiritual Engagement</th>
+        </tr>
+      </thead>
+      <tbody id="dataTable">
+        <!-- Dynamic data rows go here -->
+      </tbody>
+    </table>
+
+    <!-- Chart -->
+    <canvas id="engagementChart" width="400" height="200"></canvas>
+  </div>
 
   <script>
     const dataStore = [];
     let time = 0;
     let trackingInterval;
 
-    // Simulated Chart.js Chart
+    // Initialize Chart
     const ctx = document.getElementById('engagementChart').getContext('2d');
     const engagementChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: [],
-        datasets: [{
-          label: 'Engagement Score',
-          data: [],
-          borderColor: '#4CAF50',
-          fill: false
-        }]
+        datasets: [
+          { label: 'Physical Engagement', data: [], borderColor: 'blue', fill: false },
+          { label: 'Mental Engagement', data: [], borderColor: 'purple', fill: false },
+          { label: 'Emotional Engagement', data: [], borderColor: 'red', fill: false },
+          { label: 'Spiritual Engagement', data: [], borderColor: 'green', fill: false }
+        ]
       },
       options: {
         responsive: true,
         plugins: {
           title: {
             display: true,
-            text: 'Real-Time Engagement'
+            text: 'Real-Time Engagement Metrics'
           }
         },
         scales: {
@@ -93,19 +143,38 @@
     document.getElementById('startTracking').addEventListener('click', () => {
       alert("Tracking Started");
       trackingInterval = setInterval(() => {
-        const engagement = Math.random() * 100;
+        const physical = Math.random() * 100;
+        const mental = Math.random() * 100;
+        const emotional = Math.random() * 100;
+        const spiritual = Math.random() * 100;
+
+        // Update Table
+        const dataRow = `
+          <tr>
+            <td>${time}</td>
+            <td>${physical.toFixed(2)}</td>
+            <td>${mental.toFixed(2)}</td>
+            <td>${emotional.toFixed(2)}</td>
+            <td>${spiritual.toFixed(2)}</td>
+          </tr>
+        `;
+        document.getElementById('dataTable').insertAdjacentHTML('beforeend', dataRow);
 
         // Update Chart
         engagementChart.data.labels.push(time);
-        engagementChart.data.datasets[0].data.push(engagement);
+        engagementChart.data.datasets[0].data.push(physical);
+        engagementChart.data.datasets[1].data.push(mental);
+        engagementChart.data.datasets[2].data.push(emotional);
+        engagementChart.data.datasets[3].data.push(spiritual);
+
         if (engagementChart.data.labels.length > 20) {
           engagementChart.data.labels.shift();
-          engagementChart.data.datasets[0].data.shift();
+          engagementChart.data.datasets.forEach(dataset => dataset.data.shift());
         }
         engagementChart.update();
 
         // Store Data
-        dataStore.push({ time, engagement });
+        dataStore.push({ time, physical, mental, emotional, spiritual });
         time++;
       }, 1000);
     });
@@ -128,8 +197,8 @@
       }
 
       const csvContent = "data:text/csv;charset=utf-8," +
-        ["Time,Engagement"]
-          .concat(dataStore.map(row => `${row.time},${row.engagement.toFixed(2)}`))
+        ["Time,Physical,Mental,Emotional,Spiritual"]
+          .concat(dataStore.map(row => `${row.time},${row.physical.toFixed(2)},${row.mental.toFixed(2)},${row.emotional.toFixed(2)},${row.spiritual.toFixed(2)}`))
           .join("\n");
 
       const encodedUri = encodeURI(csvContent);
